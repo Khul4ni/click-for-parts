@@ -1,0 +1,31 @@
+.site-nav.is-open {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 1rem;
+  top: 3.5rem;
+  background: white;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 760px) {
+  .nav-toggle {
+    display: inline-block;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .card-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    padding: 4rem 0;
+  }
+}

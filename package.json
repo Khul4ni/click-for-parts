@@ -1,0 +1,12 @@
+{
+  "name": "click-for-parts",
+  "version": "1.0.0",
+  "description": "Marketing website for Click For Parts with a Node.js contact form backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

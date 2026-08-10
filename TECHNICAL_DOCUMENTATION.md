@@ -525,8 +525,9 @@ For future maintenance, the recommended workflow is:
 
 ### Hosting provider
 
-- The README previously suggested Host Africa as a possible hosting target, but no live hosting provider was actually configured or verified in this session.
-- Recommended / Future Procedure: deploy the project to a Node-capable hosting service such as Render, Vercel, or a traditional host that supports Node.js.
+- The repository is compatible with Render as the chosen Node.js deployment target.
+- A local file named `render.yaml` exists in the working directory but is UNTRACKED by Git in this environment and was NOT part of the verified deployment. Review before deciding whether to commit it.
+- Recommended / Future Procedure: Future infrastructure work includes domain mapping, email integration, and production hardening; the current live deployment is already hosted on Render and verified.
 
 ### Email service
 
@@ -615,32 +616,37 @@ If the business details change, the markup should be updated directly here.
 
 ### Current deployment status
 
-The project was verified locally. A production deployment was not fully completed or verified in this environment.
+The project has been deployed to Render and the live service is VERIFIED as reachable (Phase 2 complete).
 
-### What was actually verified
+What was actually verified
 
-- the app installs with npm,
-- the server starts with Node,
-- the app is served on a local port.
+- Hosting provider: Render (Web Service)
+- GitHub repository: `Khul4ni/click-for-parts` (deployment configured through the Render dashboard connected to this GitHub repo)
+- Branch deployed: `master`
+- Runtime: Node
+- Build command: `npm install`
+- Start command: `npm start`
+- Live URL (owner-provided / VERIFIED): https://click-for-parts.onrender.com
+- Verification date: 2026-08-10
 
-### What is still pending
+Notes about `render.yaml`
 
-- GitHub remote push completion was not fully verified,
-- a live hosting provider was not configured from available evidence,
-- no real email service or database integration was set up.
+- A local file named `render.yaml` exists in this working directory but is currently untracked by Git in this environment (see git status). This local file was NOT verified as part of the deployment and should NOT be assumed to have been used for the verified Render deployment. Treat `render.yaml` as an untracked local deployment configuration pending review before deciding whether to commit it.
 
-### Recommended deployment path
+What is still pending
 
-A practical next deployment step would be:
+- Real email delivery for the contact form (Phase 4) is not yet configured.
+- DNS, custom domain mapping, and any business email setup are pending owner actions and not configured as part of this verification.
 
-1. push the repository to GitHub,
-2. deploy to a Node-capable host such as Render or a traditional hosting provider that supports Node.js,
-3. configure the domain and SSL if applicable,
-4. add a real email service for the contact form.
+Recommended next steps (Phase 3)
+
+1. Proceed to Phase 3: update the website content and UI/UX to reflect the real Click For Parts business positioning.
+2. After Phase 3 content/UI changes are approved, schedule Phase 4 to wire email delivery using verified domain/email credentials.
+3. Run the production hardening checklist once email and domain are configured.
 
 ### Production deployment notes
 
-Because the site uses Express, the host must support Node.js. If the host only supports static files, the website will still serve the frontend but the contact form backend will not function unless a compatible runtime is provided.
+Because the site uses Express, the host must provide a Node.js runtime. Render provides this runtime and was used for this verification. If the host only supports static files, the contact backend will not function without a Node runtime or a separate form backend service.
 
 ---
 

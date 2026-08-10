@@ -94,6 +94,20 @@ Asset folders:
   3. Open `http://localhost:3000` in a browser.
 
 - If deploying to production, add a real email service or persistence layer.
+- If deploying to production, add a real email service or persistence layer.
+Render is the recommended deployment target for this Node.js-backed site.
+Deployment status: Deployed to Render (Phase 2 VERIFIED). Live URL: https://click-for-parts.onrender.com
+
+Deployment facts (verified)
+
+- Hosting provider: Render Web Service
+- GitHub repository: `Khul4ni/click-for-parts`
+- Branch: `master`
+- Runtime: Node
+- Build command: `npm install`
+- Start command: `npm start`
+
+Note: a local file named `render.yaml` exists in the working directory but is UNTRACKED by Git in this environment and was NOT part of the verified deployment. Review before committing.
 - If the site remains fully static, the `server.js` backend can still be used for contact form handling behind a Node host.
 
 ## Recommended Improvements

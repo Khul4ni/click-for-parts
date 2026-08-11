@@ -28,14 +28,23 @@ app.post('/contact', (req, res) => {
   const name = String(req.body.name || '').trim();
   const email = String(req.body.email || '').trim();
   const phone = String(req.body.phone || '').trim();
+  const interest = String(req.body.interest || '').trim();
   const message = String(req.body.message || '').trim();
 
-  if (!name || !email || !message) {
+  const allowedInterests = [
+    'spares',
+    'tracking',
+    'insurance',
+    'fleet',
+    'other',
+  ];
+
+  if (!name || !email || !phone || !interest || !message || !allowedInterests.includes(interest)) {
     return res.status(400).send('Please complete the required fields.');
   }
 
   console.log('New contact request:');
-  console.log({ name, email, phone, message });
+  console.log({ name, email, phone, interest, message });
 
   // TODO: Replace console logging with an email service or database integration.
 

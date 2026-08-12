@@ -29,3 +29,9 @@
     padding: 4rem 0;
   }
 }
+
+@media (max-width: 760px) {
+  .site-nav.is-open { background: var(--surface); color: var(--text); }
+  .nav-toggle { width: 44px; height: 44px; }
+  .site-nav a { padding: 0.5rem 0; }
+}

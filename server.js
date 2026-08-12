@@ -43,8 +43,7 @@ app.post('/contact', (req, res) => {
     return res.status(400).send('Please complete the required fields.');
   }
 
-  console.log('New contact request:');
-  console.log({ name, email, phone, interest, message });
+  console.log(`Contact submission received: interest=${interest}`);
 
   // TODO: Replace console logging with an email service or database integration.
 

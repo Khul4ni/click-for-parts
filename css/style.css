@@ -41,7 +41,7 @@ img {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(7, 16, 40, 0.96);
   border-bottom: 1px solid var(--border);
 }
 
@@ -61,6 +61,13 @@ img {
 .site-nav {
   display: flex;
   gap: 1rem;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible,
+.brand:hover,
+.brand:focus-visible {
+  color: var(--accent);
 }
 
 .nav-toggle {

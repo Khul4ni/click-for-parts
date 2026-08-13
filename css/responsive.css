@@ -4,7 +4,7 @@
   position: absolute;
   right: 1rem;
   top: 3.5rem;
-  background: white;
+  background: var(--surface);
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.8rem;

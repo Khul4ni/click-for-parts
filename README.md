@@ -35,4 +35,13 @@ Notes
 - Domain: `clickforparts.co.za` — proposed / placeholder — NOT YET CONFIGURED
 - Email: `info@clickforparts.co.za` — proposed / placeholder — NOT YET CONFIGURED
 - Do not hard-code email service ports or DNS records until the hosting account or domain is provisioned.
- - Replace all placeholders with real business details before launch.
+- Replace all placeholders with real business details before launch.
+
+## Contact email delivery
+
+**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+
+The contact form sends through Resend using `Click For Parts <onboarding@resend.dev>`.
+Until a custom sending domain is verified, Resend may deliver only to the email address
+associated with the Resend account. The service requires `RESEND_API_KEY` and
+`CONTACT_TO_EMAIL` in the Render environment. Their values must never be committed.

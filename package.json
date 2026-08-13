@@ -4,9 +4,11 @@
   "description": "Marketing website for Click For Parts with a Node.js contact form backend",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "resend": "^6.19.0"
   }
 }

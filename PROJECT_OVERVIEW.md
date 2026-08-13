@@ -127,6 +127,16 @@ Note: a local file named `render.yaml` exists in the working directory but is UN
 - The backend validates required fields.
 - The backend logs the form data and redirects to the homepage.
 
+## Phase 4A temporary email delivery
+
+**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+
+The Express contact route now validates and rate-limits submissions before sending them
+through Resend. It uses the Resend test sender until the owner purchases and verifies a
+custom domain. Resend test-mode delivery may be restricted to the email associated with
+the Resend account. Provider credentials and the recipient are supplied only through
+Render environment variables.
+
 ## Important notes
 
 - `contact.php` remains in the repository for reference but is not part of the current JavaScript backend flow.

@@ -39,9 +39,34 @@ Notes
 
 ## Contact email delivery
 
-**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+**TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
 
 The contact form sends through Resend using `Click For Parts <onboarding@resend.dev>`.
-Until a custom sending domain is verified, Resend may deliver only to the email address
-associated with the Resend account. The service requires `RESEND_API_KEY` and
-`CONTACT_TO_EMAIL` in the Render environment. Their values must never be committed.
+The production flow is:
+
+```text
+Visitor
+  → async contact form
+  → Express validation
+  → honeypot, per-IP rate limiting, and 16 KB body limit
+  → Resend API
+  → CONTACT_TO_EMAIL
+  → accessible success or error feedback
+```
+
+Render provides `RESEND_API_KEY` and `CONTACT_TO_EMAIL` as environment variables. Their
+values must never be committed or logged. Production verification confirmed valid
+submission acceptance, the frontend success state, rejection of invalid submissions,
+active abuse protection, privacy-safe logging, and working desktop/mobile navigation.
+
+Current limitations:
+
+- No custom domain or business mailbox has been configured.
+- The `resend.dev` sender is temporary.
+- The in-memory rate limiter resets whenever the service restarts.
+- Provider acceptance does not guarantee inbox delivery, although the owner has observed
+  successful delivery during Phase 4A verification.
+
+Phase 4B remains future work: purchase and configure the custom domain and business
+mailbox, verify a Resend sender domain, publish SPF/DKIM/DMARC records, replace the test
+sender, and complete final production hardening.

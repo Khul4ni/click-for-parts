@@ -70,14 +70,14 @@ Asset folders:
 ### Express backend
 - Single endpoint: `POST /contact`
 - Receives form data from the frontend contact form
-- Validates required fields: `name`, `email`, and `message`
-- Logs request details to the server console
-- Redirects back to the homepage after handling the submission
+- Validates required fields: `name`, `email`, `phone`, `interest`, and `message`
+- Applies body/field limits, a honeypot, and per-IP rate limiting
+- Sends accepted enquiries through Resend and returns a JSON success or error response
 
 ### Data handling
 - Uses `express.urlencoded()` middleware to parse form submissions
 - Uses `express.json()` middleware for consistency with JSON request handling
-- Currently prints contact submissions to console as a stand-in for real delivery
+- Uses privacy-safe operational logs without customer contact details or message content
 
 ### Deployment notes
 - The backend is intended to run on Node.js with Express.
@@ -93,8 +93,6 @@ Asset folders:
      ```
   3. Open `http://localhost:3000` in a browser.
 
-- If deploying to production, add a real email service or persistence layer.
-- If deploying to production, add a real email service or persistence layer.
 Render is the recommended deployment target for this Node.js-backed site.
 Deployment status: Deployed to Render (Phase 2 VERIFIED). Live URL: https://click-for-parts.onrender.com
 
@@ -112,30 +110,42 @@ Note: a local file named `render.yaml` exists in the working directory but is UN
 
 ## Recommended Improvements
 
-- Replace console logging in `server.js` with a transactional email provider or CRM integration.
 - Remove `contact.php` and update documentation once the backend is confirmed to use Node/Express.
-- Add client-side form validation and user-friendly success/error messaging.
-- Improve accessibility by adding `aria-live` messaging and validation error text.
-- Add production-ready security headers and request rate limiting if this is deployed publicly.
+- Complete Phase 4B custom-domain, business-mailbox, authenticated sender-domain, and
+  production-hardening work.
 
 ## Summary of current behavior
 
 - Users load `index.html`.
 - They can navigate sections through the site header links.
 - They can submit the contact form.
-- The form sends a `POST` request to the backend route `/contact`.
-- The backend validates required fields.
-- The backend logs the form data and redirects to the homepage.
+- JavaScript submits the form asynchronously to `POST /contact`.
+- Express validates required fields and the allowed interest value.
+- A honeypot, per-IP in-memory rate limiter, field limits, and 16 KB body limit protect
+  the endpoint from basic abuse.
+- Resend sends an enquiry notification to `CONTACT_TO_EMAIL`.
+- The accessible status region reports sending, success, or failure without reloading.
 
 ## Phase 4A temporary email delivery
 
-**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+**TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
 
-The Express contact route now validates and rate-limits submissions before sending them
-through Resend. It uses the Resend test sender until the owner purchases and verifies a
-custom domain. Resend test-mode delivery may be restricted to the email associated with
-the Resend account. Provider credentials and the recipient are supplied only through
-Render environment variables.
+The live Express route sends through Resend using
+`Click For Parts <onboarding@resend.dev>`. Runtime configuration is supplied through
+`RESEND_API_KEY` and `CONTACT_TO_EMAIL`; their values are never stored in Git or logged.
+
+Production verification confirmed valid submission acceptance, frontend success/error
+behavior, invalid-submission rejection, active abuse controls, privacy-safe logs, the
+corrected dark navigation, and desktop/mobile behavior without console errors or
+horizontal overflow. The owner also observed real inbox delivery.
+
+Limitations remain: there is no custom domain or business mailbox, the `resend.dev`
+sender is temporary, the in-memory limiter resets on restart, and provider acceptance
+does not itself guarantee inbox delivery.
+
+Phase 4B remains future work and includes the custom domain, business mailbox, verified
+Resend sender domain, SPF/DKIM/DMARC records, replacement of the test sender, and final
+production hardening.
 
 ## Important notes
 

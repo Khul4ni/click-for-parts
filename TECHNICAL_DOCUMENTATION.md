@@ -79,11 +79,13 @@ The current architecture is intentionally simple:
 
 1. The browser requests the site.
 2. Express serves the static files from the project root.
-3. The contact form posts to the server endpoint /contact.
-4. The server validates the incoming form fields.
-5. The server logs the submission and redirects the user back to the homepage.
+3. JavaScript submits the contact form asynchronously to `/contact`.
+4. Express validates the incoming fields and applies basic abuse protection.
+5. Resend sends the enquiry to the configured recipient.
+6. The browser displays accessible success or error feedback.
 
-This is a lightweight single-server architecture with no database and no email delivery service yet.
+This is a lightweight single-server architecture with no database. Phase 4A temporary
+Resend delivery is active and production-verified.
 
 ---
 
@@ -238,16 +240,18 @@ This is the most important application file after the HTML page. It:
 3. serves static files from the project directory,
 4. defines the /contact route,
 5. validates required fields,
-6. logs submitted form data,
-7. redirects the user back to the homepage.
+6. applies basic abuse protection,
+7. sends accepted enquiries through Resend, and
+8. returns a JSON result for accessible frontend feedback.
 
 The core request flow is:
 
 - browser submits contact form,
 - Express parses form data,
-- server validates `name`, `email`, and `message`,
-- server logs the payload, and
-- browser is redirected to `/`.
+- server validates `name`, `email`, `phone`, `interest`, and `message`,
+- server applies the honeypot, rate limiter, and request/field limits,
+- Resend accepts or rejects the notification request, and
+- the frontend displays a success or error state.
 
 The current implementation performs only minimal validation. It does not connect to an email provider or database.
 
@@ -531,9 +535,12 @@ For future maintenance, the recommended workflow is:
 
 ### Email service
 
-- Not currently implemented.
-- The contact form currently logs incoming submissions to the server console.
-- Recommended / Future Procedure: integrate a real email service such as SMTP, SendGrid, or another form backend.
+- **TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
+- Provider: Resend API.
+- Sender: `Click For Parts <onboarding@resend.dev>`.
+- Runtime variables: `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (values are not stored in Git).
+- The server waits for provider acceptance and uses privacy-safe operational logging.
+- A custom domain, business mailbox, and verified sender domain remain Phase 4B work.
 
 ---
 
@@ -893,14 +900,14 @@ But the current project already contains these files and is ready to run once de
 ### What did not work as smoothly
 
 - local port conflicts caused startup issues,
-- the project still needs a real email integration for the contact form,
+- the temporary Resend sender still needs replacement during Phase 4B,
 - the business content and placeholders still need final real-world details.
 
 ### Improvements that should be made later
 
-- add a real email service,
-- add success and error feedback to the contact form,
-- add front-end validation and accessibility improvements,
+- configure a verified sender domain and business mailbox,
+- publish SPF, DKIM, and DMARC records,
+- replace the temporary Resend test sender,
 - add deployment automation.
 
 ---
@@ -909,7 +916,7 @@ But the current project already contains these files and is ready to run once de
 
 ### Phase 4A email delivery status
 
-**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+**TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
 
 The current `/contact` route uses Resend with the test sender
 `Click For Parts <onboarding@resend.dev>`. It reads `RESEND_API_KEY` and
@@ -919,16 +926,36 @@ a 16 KB request limit, per-IP in-memory rate limiting, a honeypot, field-length 
 and privacy-safe operational logs. Until a custom domain is verified, delivery may be
 limited to the email associated with the Resend account.
 
-### Critical improvements
+The verified production flow is:
 
-1. Real email delivery for the contact form  
-   This is the most important improvement for turning the demo into a usable business website.
+```text
+Visitor
+  → async contact form
+  → Express validation
+  → honeypot, per-IP rate limiting, and body/field limits
+  → Resend API
+  → CONTACT_TO_EMAIL
+  → accessible success or error feedback
+```
 
-2. Production deployment setup  
-   The website should be deployed to a real hosting environment and tested publicly.
+Production checks confirmed valid submission acceptance, the frontend success state,
+invalid-submission rejection, active abuse protection, no sensitive contact data in
+logs, the corrected header/navigation styling, and successful desktop/mobile checks.
+The owner previously observed delivery in the configured inbox.
 
-3. Better security hardening  
-   Add HTTPS, rate limiting, and more robust validation.
+Current limitations:
+
+- No custom domain or business mailbox is configured.
+- The `resend.dev` sender is temporary.
+- The in-memory rate limiter resets on service restart and is not shared across instances.
+- Provider acceptance does not guarantee inbox delivery.
+
+### Phase 4B future work
+
+1. Configure a custom domain and business mailbox.
+2. Verify a Resend sender domain and publish SPF, DKIM, and DMARC records.
+3. Replace `onboarding@resend.dev` with the approved production sender.
+4. Complete final production hardening and reassess distributed abuse protection.
 
 ### Nice-to-have improvements
 
@@ -956,9 +983,13 @@ Express server (server.js)
   ↓
 /contact route
   ↓
-Validation + logging
+Validation + honeypot + rate/body limits
   ↓
-Redirect back to homepage
+Resend API
+  ↓
+CONTACT_TO_EMAIL
+  ↓
+Accessible success/error feedback
 ```
 
 ### Typical user interaction
@@ -969,7 +1000,8 @@ Redirect back to homepage
 4. The visitor fills out the contact form.
 5. The browser sends the form to the Express server.
 6. The backend validates the input.
-7. The server logs the submission and returns the user to the homepage.
+7. The server applies abuse controls and requests delivery through Resend.
+8. The frontend displays accessible success or error feedback.
 
 ### In short
 

@@ -213,6 +213,14 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
   white-space: nowrap;
 }
 
+.form-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .contact-list {
   padding-left: 1rem;
 }

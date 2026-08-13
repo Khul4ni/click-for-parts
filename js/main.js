@@ -1,7 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const toggle = document.querySelector('.nav-toggle');
-  const nav = document.querySelector('.site-nav');
-  const year = document.getElementById('year');
+function initializePage(documentRef = document, fetchImpl = fetch) {
+  const toggle = documentRef.querySelector('.nav-toggle');
+  const nav = documentRef.querySelector('.site-nav');
+  const year = documentRef.getElementById('year');
 
   if (year) {
     year.textContent = new Date().getFullYear();
@@ -12,45 +12,62 @@ document.addEventListener('DOMContentLoaded', () => {
       const isOpen = nav.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', String(isOpen));
       if (isOpen) {
-        // focus first link for keyboard users
-        const firstLink = nav.querySelector('a');
-        firstLink?.focus();
+        nav.querySelector('a')?.focus();
       }
     });
   }
 
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  documentRef.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', () => {
       nav?.classList.remove('is-open');
     });
   });
 
-  // Basic client-side validation for the contact form (does not replace server validation)
-  const form = document.getElementById('contact-form');
-  const status = document.getElementById('form-status');
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      const name = form.querySelector('#name');
-      const email = form.querySelector('#email');
-      const interest = form.querySelector('#interest');
-      const message = form.querySelector('#message');
-      let invalid = false;
-      let msg = '';
-      if (!name?.value.trim()) { invalid = true; msg = 'Please enter your name.'; }
-      else if (!email?.value.trim()) { invalid = true; msg = 'Please enter your email.'; }
-      else if (!interest?.value) { invalid = true; msg = 'Please select what you are interested in.'; }
-      else if (!message?.value.trim()) { invalid = true; msg = 'Please enter a short message.'; }
+  const form = documentRef.getElementById('contact-form');
+  const status = documentRef.getElementById('form-status');
+  const submitButton = form?.querySelector('button[type="submit"]');
+  let isSubmitting = false;
 
-      if (invalid) {
-        e.preventDefault();
-        status.textContent = msg;
-        status.classList.remove('visually-hidden');
-        status.focus?.();
-      } else {
-        // allow form to submit; show a brief status for screen-readers
-        status.textContent = 'Submitting request…';
-        status.classList.remove('visually-hidden');
-      }
-    });
-  }
-});
+  if (!form || !status || !submitButton) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    isSubmitting = true;
+    submitButton.disabled = true;
+    status.textContent = 'Sending...';
+    status.classList.remove('visually-hidden');
+
+    try {
+      const response = await fetchImpl(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) throw new Error('Submission failed');
+
+      status.textContent = 'Message sent successfully.';
+      form.reset();
+    } catch {
+      status.textContent = 'Something went wrong. Please try again.';
+    } finally {
+      isSubmitting = false;
+      submitButton.disabled = false;
+    }
+  });
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => initializePage());
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { initializePage };
+}

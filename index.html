@@ -153,6 +153,10 @@
           </div>
 
           <form id="contact-form" class="contact-form" action="/contact" method="post">
+            <div class="form-honeypot" aria-hidden="true">
+              <label for="website">Leave this field empty</label>
+              <input id="website" type="text" name="website" tabindex="-1" autocomplete="off" />
+            </div>
             <div>
               <label for="name">Name<span aria-hidden="true">*</span></label>
               <input id="name" type="text" name="name" required />

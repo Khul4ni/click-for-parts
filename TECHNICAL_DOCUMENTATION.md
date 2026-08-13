@@ -907,6 +907,18 @@ But the current project already contains these files and is ready to run once de
 
 ## 17. Future Improvements
 
+### Phase 4A email delivery status
+
+**TEMPORARY / TEST-MODE EMAIL DELIVERY**
+
+The current `/contact` route uses Resend with the test sender
+`Click For Parts <onboarding@resend.dev>`. It reads `RESEND_API_KEY` and
+`CONTACT_TO_EMAIL` from the runtime environment, waits for provider acceptance, and
+returns accessible success or failure feedback through the frontend. The route includes
+a 16 KB request limit, per-IP in-memory rate limiting, a honeypot, field-length limits,
+and privacy-safe operational logs. Until a custom domain is verified, delivery may be
+limited to the email associated with the Resend account.
+
 ### Critical improvements
 
 1. Real email delivery for the contact form  

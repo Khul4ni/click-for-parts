@@ -31,13 +31,15 @@ function createFrontend({ responseOk = true, deferred = false } = {}) {
     },
   };
   let fetchCalls = 0;
-  const fetchImpl = () => {
+  let fetchOptions;
+  const fetchImpl = (url, options) => {
     fetchCalls += 1;
+    fetchOptions = options;
     if (deferred) return new Promise((resolve) => { resolveFetch = () => resolve({ ok: responseOk }); });
     return Promise.resolve({ ok: responseOk });
   };
 
-  return { button, documentRef, fetchImpl, form, get fetchCalls() { return fetchCalls; }, get resolveFetch() { return resolveFetch; }, status, get submitHandler() { return submitHandler; } };
+  return { button, documentRef, fetchImpl, form, get fetchCalls() { return fetchCalls; }, get fetchOptions() { return fetchOptions; }, get resolveFetch() { return resolveFetch; }, status, get submitHandler() { return submitHandler; } };
 }
 
 const originalFormData = global.FormData;
@@ -57,6 +59,7 @@ test('frontend shows sending then success and resets form', async () => {
   assert.equal(fixture.status.textContent, 'Message sent successfully.');
   assert.equal(fixture.button.disabled, false);
   assert.equal(fixture.form.resetCalls, 1);
+  assert.ok(fixture.fetchOptions.body instanceof URLSearchParams);
 });
 
 test('frontend shows safe failure state without resetting', async () => {

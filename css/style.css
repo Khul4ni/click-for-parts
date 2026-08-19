@@ -232,6 +232,18 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
   padding-left: 1rem;
 }
 
+.contact-email {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+.contact-email:hover,
+.contact-email:focus-visible {
+  color: var(--accent);
+}
+
 .contact-form {
   display: grid;
   gap: 1rem;
@@ -257,6 +269,15 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 
 .footer-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
   border-top: 1px solid var(--border);
   padding-top: 1rem;
+}
+
+.footer-wrap p {
+  margin: 0;
 }

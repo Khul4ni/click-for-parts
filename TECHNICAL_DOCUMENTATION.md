@@ -1,1008 +1,311 @@
-# Click For Parts - Technical Documentation
+# Click For Parts — Technical Documentation
 
-## Document purpose
+## 1. Current status matrix
 
-This document is a developer handover and technical knowledge base for the Click For Parts project. It is based on the files present in the repository, the configuration that was created, and the commands that were executed during development and verification in this environment.
+| Area | Status | Current fact |
+|---|---|---|
+| Production website | **VERIFIED** | https://click-for-parts.onrender.com |
+| Render deployment | **VERIFIED** | Web Service auto-deploying from `master` |
+| Public business email | **VERIFIED** | `info@clickforparts.co.za` |
+| Google Workspace Gmail | **VERIFIED** | Incoming and outgoing tests succeeded |
+| SPF | **CONFIGURED** | Google-only SPF is published |
+| DKIM | **CONFIGURED / PROPAGATION PENDING** | Google selector is published; verification is pending |
+| DMARC | **NOT YET CONFIGURED** | Planned after DKIM stabilises |
+| Custom website domain | **OWNED / NOT YET CONNECTED TO RENDER** | `clickforparts.co.za` is active at HostAfrica |
+| Resend custom sender domain | **NOT YET CONFIGURED** | Temporary `resend.dev` sender remains active |
+| Phase 4A | **COMPLETE / VERIFIED** | Temporary Resend delivery is production-live |
+| Phase 4B | **PARTIALLY STARTED / NOT COMPLETE** | Domain and mail infrastructure work remains |
 
-> Important distinction: this document records what was actually observed and implemented in the project. Where a deployment step, hosting target, or GitHub push could not be verified from available evidence, it is clearly marked as "Not verified from available project evidence" or "Recommended / Future Procedure".
+## 2. Company and product scope
 
----
+Click For Parts (Pty) Ltd is a registered South African private company.
 
-## 1. Project Overview
+- Registration number: `2026/594687/07`
+- Registration date: 29 July 2026
+- Registered office: 62 6th Street, Springs, Gauteng, 1575, South Africa
+- Phone: `066 560 8782`
+- Email: `info@clickforparts.co.za`
 
-### What the project is
+The business is positioned as an integrated automotive partner for individual motorists
+and fleet operators. Its three services are Motor Vehicle Spares, Vehicle Tracking, and
+Motor Insurance. Fleet is a customer segment/use case, not a fourth service. The core
+message is: **We keep you covered on every journey.**
 
-Click For Parts is a small marketing-style website for a business that offers video activations, marketing support, and practical parts/repair-related support services. The project was created as a simple, presentation-ready landing page with a contact form that can be served locally and later deployed to a web host.
+Do not add unverified claims about partners, clients, certifications, testimonials,
+insurers, tracking providers, statistics, or delivery guarantees.
 
-### Problem it solves
+## 3. Application architecture
 
-The project solves the need for a lightweight online presence for a business that wants to:
+### Stack
 
-- present its services clearly,
-- provide a simple way for visitors to contact the business, and
-- show a polished website without needing a large, complex framework stack.
+- HTML5, CSS3, and vanilla JavaScript
+- Node.js and Express
+- Resend Node.js SDK
+- Node.js built-in test runner
+- GitHub source repository
+- Render Web Service hosting
 
-### Intended users / customers
+The repository does not explicitly pin Node.js. Resend requires Node.js 20 or newer.
 
-The intended audience is:
-
-- prospective customers looking for the business services,
-- the business owner who wants to showcase the brand online, and
-- future developers who need a simple project to maintain and extend.
-
-### Main features
-
-The implemented website includes:
-
-- a sticky site header and responsive navigation,
-- a hero section with clear marketing copy,
-- an about section,
-- a services section with cards,
-- a portfolio placeholder section,
-- a clients/partners section placeholder,
-- a contact section with a form,
-- a footer that automatically shows the current year,
-- a Node.js-based backend route that receives contact form submissions.
-
-### Technologies used
-
-The project uses:
-
-- HTML5 for page structure,
-- CSS3 for styling and responsive layout,
-- vanilla JavaScript for small interactive behaviors,
-- Node.js for runtime,
-- Express.js for the backend web server,
-- npm for package management,
-- Git for version control,
-- GitHub as the intended remote repository destination.
-
-### Why these technologies were chosen
-
-- HTML, CSS, and JavaScript were selected because the site is mostly static content and does not require a complex frontend framework.
-- Express was used because it is simple to set up and works well for a lightweight contact form endpoint.
-- Node.js was chosen because the project already included a backend handler and the runtime is suitable for lightweight web hosting.
-- Git and GitHub were used to make the project version-controlled and publication-ready.
-
-### Alternatives that could have been used
-
-Other valid approaches include:
-
-- a pure static site with no backend, using a third-party form service,
-- a PHP-based contact form instead of Node.js,
-- a React or Vue frontend with a more advanced build process,
-- a WordPress site if the business wanted a content-management workflow.
-
-### Overall architecture
-
-The current architecture is intentionally simple:
-
-1. The browser requests the site.
-2. Express serves the static files from the project root.
-3. JavaScript submits the contact form asynchronously to `/contact`.
-4. Express validates the incoming fields and applies basic abuse protection.
-5. Resend sends the enquiry to the configured recipient.
-6. The browser displays accessible success or error feedback.
-
-This is a lightweight single-server architecture with no database. Phase 4A temporary
-Resend delivery is active and production-verified.
-
----
-
-## 2. Project Structure
-
-The workspace currently contains the following important files and directories:
+### Request flow
 
 ```text
-click-for-parts/
-├── BUILD_PLAN.md
-├── PROJECT_OVERVIEW.md
-├── README.md
-├── TECHNICAL_DOCUMENTATION.md
-├── contact.php
-├── index.html
-├── package.json
-├── package-lock.json
-├── server.js
-├── .gitignore
-├── css/
-│   ├── responsive.css
-│   └── style.css
-├── js/
-│   └── main.js
-└── node_modules/   (generated by npm install)
+Browser
+  → Express static assets
+  → asynchronous POST /contact
+  → server validation
+  → request and field-size controls
+  → honeypot
+  → in-memory per-IP rate limiting
+  → Resend API
+  → configured recipient
+  → JSON response
+  → accessible frontend status
 ```
 
-### Root files
+### Important files
 
-- [BUILD_PLAN.md](BUILD_PLAN.md)  
-  A planning and handoff checklist created earlier in the project life cycle.
+- `index.html`: page structure, service content, verified public contact details, and form
+- `css/style.css`: dark navy design system and component styles
+- `css/responsive.css`: mobile navigation and responsive layout
+- `js/main.js`: navigation behavior and asynchronous form submission
+- `server.js`: Express server, validation, abuse protection, and Resend delivery
+- `package.json` / `package-lock.json`: runtime scripts and dependencies
+- `test/server.test.js`: backend and privacy tests with a mocked sender
+- `test/frontend.test.js`: form-state and duplicate-submit tests
 
-- [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)  
-  A descriptive overview of the system, workflow, and features.
+The legacy `contact.php` file is not used by the production Node/Express path.
 
-- [README.md](README.md)  
-  A high-level project summary that explains stack and deployment notes.
+## 4. Website and accessibility
 
-- [TECHNICAL_DOCUMENTATION.md](TECHNICAL_DOCUMENTATION.md)  
-  The current technical handover document.
+The production page contains Home, Services, Integrated Value, How It Works, Who We
+Serve, About, Contact, and Footer sections. It presents three automotive services and no
+portfolio/client placeholders.
 
-- [contact.php](contact.php)  
-  A legacy PHP contact handler. It is not part of the current Node.js runtime flow, but it is still present as a reference artifact.
+The verified Contact and Footer details are:
 
-- [index.html](index.html)  
-  The main landing page for the website. It contains the content sections and the contact form markup.
+- Click For Parts (Pty) Ltd
+- [066 560 8782](tel:+27665608782)
+- [info@clickforparts.co.za](mailto:info@clickforparts.co.za)
+- 62 6th Street, Springs, Gauteng, 1575
 
-- [package.json](package.json)  
-  Defines the Node.js package name, version, script entry point, and dependency list.
+Verified desktop and approximately 390px mobile behavior includes:
 
-- [package-lock.json](package-lock.json)  
-  Generated by npm during dependency installation. It locks the exact installed dependency versions.
+- no horizontal overflow,
+- no browser console errors,
+- working mobile menu open/close behavior,
+- correct `aria-expanded` state,
+- visible keyboard focus with cyan treatment,
+- dark navy sticky navigation,
+- tap-friendly phone and email links, and
+- responsive footer wrapping.
 
-- [server.js](server.js)  
-  The Express server entry point. It serves static files and handles the /contact endpoint.
+### Header regression history
 
-- [.gitignore](.gitignore)  
-  Excludes generated and local files from Git, including node_modules and logs.
+A legacy CSS rule briefly caused a light header background with near-white navigation
+text. Commit `91d35fb903504090dc3b84a7550262226e0e9f68`
+(`fix: restore dark navigation styling`) restored the dark navy header and mobile menu.
 
-### CSS assets
+## 5. Contact endpoint
 
-- [css/style.css](css/style.css)  
-  Main visual styling for the homepage, layout, colors, typography, cards, forms, and buttons.
+### Validation
 
-- [css/responsive.css](css/responsive.css)  
-  Responsive rules that adjust the layout for smaller screen sizes.
+Required fields: `name`, `email`, `phone`, `interest`, and `message`. The `company` field
+is optional.
 
-### JavaScript assets
+Allowed `interest` values:
 
-- [js/main.js](js/main.js)  
-  Adds the mobile navigation toggle behavior and updates the footer year.
+- `spares`
+- `tracking`
+- `insurance`
+- `fleet`
+- `other`
 
-### Generated/runtime artifacts
+The server also enforces maximum field lengths and a 16 KB request-body limit.
 
-- [node_modules/](node_modules)  
-  Generated by npm install. These are runtime/dependency files required by Express and other installed packages.
+### Abuse controls
 
-### Why these files exist
+- hidden honeypot field,
+- route-scoped per-IP in-memory rate limiter,
+- duplicate-submit prevention in the browser, and
+- disabled submit control while a request is pending.
 
-Each file in the project serves a clear purpose:
+The limiter resets when the process restarts and does not coordinate across multiple
+instances.
 
-- the HTML file defines content,
-- the CSS files define presentation,
-- the JS file adds behavior,
-- the server file provides a backend handler,
-- the package file records dependencies and startup scripts,
-- the documentation files preserve context and handover information.
+### Responses
 
----
+- `200`: Resend accepted the request
+- `400`: required-field, format, whitelist, or honeypot failure
+- `413`: request body too large
+- `429`: rate limit exceeded
+- `502`: provider rejection/failure
+- `503`: missing server configuration
 
-## 3. Code Explanation
+Provider acceptance means accepted for processing, not guaranteed inbox placement.
 
-### [index.html](index.html)
+### Logging and privacy
 
-This file is the main homepage. It defines the visible structure of the website and includes the sections that the business wants to present:
+Only privacy-safe operational events are logged. The application does not log customer
+name, customer email, phone, company, enquiry message, API keys, recipient address, or
+raw provider errors.
 
-- hero area,
-- about section,
-- services section,
-- work/portfolio placeholder,
-- clients/partners placeholder,
-- contact form.
-
-The contact form uses the following attributes:
-
-- action="/contact" to submit the form to the server,
-- method="post" to send form data via HTTP POST,
-- novalidate to avoid browser-native validation overriding the custom server-side validation.
-
-The form fields are:
-
-- name,
-- email,
-- phone,
-- message.
-
-### [css/style.css](css/style.css)
-
-This file contains the visual design system for the site. It defines:
-
-- color variables,
-- typography defaults,
-- spacing rules,
-- card layout,
-- button styles,
-- form styling,
-- section layout.
-
-The design is intentionally simple and reusable, making it easy for a future developer to adjust branding or layout.
-
-### [css/responsive.css](css/responsive.css)
-
-This file contains media-query-based rules to adjust the layout for smaller screens. It helps ensure the site remains readable and navigable on mobile devices.
-
-### [js/main.js](js/main.js)
-
-This file adds small frontend behaviors:
-
-- it finds the navigation toggle button and the navigation element,
-- it toggles a mobile menu state when the button is clicked,
-- it updates the footer year dynamically,
-- it closes the open navigation when a section link is clicked.
-
-The script waits for the DOM to be ready before attaching event listeners.
-
-### [server.js](server.js)
-
-This is the most important application file after the HTML page. It:
-
-1. creates an Express application,
-2. configures middleware for form parsing,
-3. serves static files from the project directory,
-4. defines the /contact route,
-5. validates required fields,
-6. applies basic abuse protection,
-7. sends accepted enquiries through Resend, and
-8. returns a JSON result for accessible frontend feedback.
-
-The core request flow is:
-
-- browser submits contact form,
-- Express parses form data,
-- server validates `name`, `email`, `phone`, `interest`, and `message`,
-- server applies the honeypot, rate limiter, and request/field limits,
-- Resend accepts or rejects the notification request, and
-- the frontend displays a success or error state.
-
-The current implementation performs only minimal validation. It does not connect to an email provider or database.
-
-### [package.json](package.json)
-
-This file defines the Node.js package metadata and startup script.
-
-The key piece is:
-
-```json
-"scripts": {
-  "start": "node server.js"
-}
-```
-
-This means the app can be started with the command `npm start`.
-
-### [contact.php](contact.php)
-
-This file is a legacy PHP implementation of the contact handler. It was not used by the current Express backend flow, but it remains available for reference. The current implementation uses Node.js instead.
-
-### Data flow through the application
-
-The typical flow is:
-
-1. A visitor loads [index.html](index.html).
-2. The browser loads [css/style.css](css/style.css), [css/responsive.css](css/responsive.css), and [js/main.js](js/main.js).
-3. The visitor fills out the form and submits it.
-4. The browser sends a POST request to /contact.
-5. [server.js](server.js) receives the request.
-6. The server validates the fields.
-7. On success, the server logs the data and redirects the browser to the homepage.
-
-### Design decisions and assumptions
-
-The project was designed to be simple and inexpensive to deploy. The biggest assumptions are:
-
-- the site is intended to be a marketing landing page, not a complex web application,
-- there is no need for a database at this stage,
-- the current contact form is acceptable as a demo or placeholder until a real email delivery service is added.
-
-### Security considerations
-
-The current implementation has basic input validation but still has limitations:
-
-- it does not use HTTPS enforcement in the code itself,
-- it does not implement rate limiting,
-- it does not sanitize or escape data beyond trimming values,
-- it logs raw form data to the console,
-- it does not integrate with a secure email provider yet.
-
-These limitations are acceptable for a simple demo but should be improved before production use.
-
----
-
-## 4. Development Process
-
-The project was developed as a small static marketing website with a lightweight backend route. The development process followed a straightforward sequence:
-
-1. Initial project setup  
-   A local workspace was created for the website files.
-
-2. Requirement review  
-   The project was interpreted as a simple landing page with contact form behavior and a basic backend handler.
-
-3. Creating the core files  
-   The primary files were created: HTML, CSS, JavaScript, and the server entry point.
-
-4. Installing dependencies  
-   The Express package was installed via npm so the Node.js backend could run.
-
-5. Configuring the development environment  
-   A package manifest and startup script were created so the app could be launched consistently.
-
-6. Implementing the visual site  
-   The layout, content sections, and responsive styles were created.
-
-7. Implementing frontend behavior  
-   The mobile navigation toggle and dynamic year label were added.
-
-8. Implementing backend handling  
-   The /contact endpoint was built to accept form posts and validate fields.
-
-9. Running and testing locally  
-   The app was launched with Node and the server was verified by reading the startup output.
-
-10. Debugging startup issues  
-    A port conflict with port 3000 was encountered while running the app. The server code was updated to try alternative ports so startup would be more robust.
-
-11. Preparing for deployment  
-    A package manifest, ignore rules, and repository initialization were set up so the project could be published to GitHub and hosted later.
-
-The overall intent of the development process was to keep the solution simple, fast to run, and easy to understand.
-
----
-
-## 5. Command-Line History
-
-The following commands were used during the development and verification of the project.
-
-### Project directory navigation
-
-```bash
-cd /c/Users/sibek/OneDrive/Documents/click-for-parts
-```
-
-Purpose: move into the project folder in Git Bash.
-
-### Dependency installation
-
-```bash
-npm install
-```
-
-Purpose: install the project dependency tree, including Express. In this project it created [package-lock.json](package-lock.json) and the [node_modules/](node_modules) directory.
-
-### Running the development server
-
-```bash
-npm start
-```
-
-Purpose: run the app using the start script defined in [package.json](package.json).
-
-```bash
-node server.js
-```
-
-Purpose: run the Express server directly without using npm scripts.
-
-### Troubleshooting port issues
-
-```bash
-netstat -ano | findstr :3000
-```
-
-Purpose: inspect which process might be using port 3000.
-
-```bash
-PORT=3001 npm start
-```
-
-Purpose: start the app on an alternate port as a temporary workaround.
-
-### Git commands used
-
-```bash
-git init
-```
-
-Purpose: initialize the local Git repository.
-
-```bash
-git status
-```
-
-Purpose: inspect the repository state.
-
-```bash
-git add .
-```
-
-Purpose: stage all changes.
-
-```bash
-git commit -m "Initial website deployment files"
-```
-
-Purpose: create the initial local commit.
-
-```bash
-git commit -m "Add gitignore for deployment"
-```
-
-Purpose: add the ignore rules as a second commit.
-
-```bash
-git remote add origin https://github.com/Khul4ni/click-for-parts.git
-```
-
-Purpose: configure the GitHub remote.
-
-```bash
-git push -u origin master
-```
-
-Purpose: push changes to the remote repository. This step was attempted, but its completion was not fully verified from the available terminal evidence.
-
-### Recommended future commands
-
-These were not all verified as executed in this environment, but they are the natural next steps for future maintenance:
-
-```bash
-git pull
-```
-
-```bash
-git push
-```
-
-```bash
-git checkout -b feature-name
-```
-
----
-
-## 6. Git & Version Control
-
-### Why Git was used
-
-Git was used because the project needed a way to preserve history, track changes, and prepare the codebase for sharing and deployment.
-
-### Repository initialization
-
-The repository was initialized locally using Git. The repository root is the project directory.
-
-### Git configuration
-
-The local Git identity was configured as part of the setup workflow.
-
-### Files added to Git
-
-The main project files were staged and committed. The repository also includes a .gitignore file to keep generated and local files out of version control.
-
-### Commits created
-
-Two local commits were created during the setup process:
-
-- "Initial website deployment files"
-- "Add gitignore for deployment"
-
-### Remote repository setup
-
-A remote named origin was configured to point to:
-
-```text
-https://github.com/Khul4ni/click-for-parts.git
-```
-
-### Push status
-
-The remote configuration was created, but a successful push to GitHub was not fully verified from the available terminal output in this session. The repository is therefore ready for a push, but the final remote synchronization still needs a verified authentication and network step.
-
-### Future Git workflow
-
-For future maintenance, the recommended workflow is:
-
-1. make changes,
-2. run `git status`,
-3. run `git add .`,
-4. run `git commit -m "descriptive message"`,
-5. run `git push`.
-
----
-
-## 7. External Services & Infrastructure
-
-### GitHub
-
-- Purpose: remote repository hosting and collaboration.
-- Current status: remote was configured in the local Git configuration, but push confirmation was not fully verified.
-- Security note: do not store secrets in the repository.
-
-### Node.js / npm
-
-- Purpose: runtime and package management for the Express server.
-- Current status: verified locally.
-- Security note: keep dependencies current and review package updates.
-
-### Express
-
-- Purpose: serve the static site and handle the /contact endpoint.
-- Current status: implemented and verified locally.
-- Security note: no production hardening is in place yet.
-
-### Hosting provider
-
-- The repository is compatible with Render as the chosen Node.js deployment target.
-- A local file named `render.yaml` exists in the working directory but is UNTRACKED by Git in this environment and was NOT part of the verified deployment. Review before deciding whether to commit it.
-- Recommended / Future Procedure: Future infrastructure work includes domain mapping, email integration, and production hardening; the current live deployment is already hosted on Render and verified.
-
-### Email service
-
-- **TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
-- Provider: Resend API.
-- Sender: `Click For Parts <onboarding@resend.dev>`.
-- Runtime variables: `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (values are not stored in Git).
-- The server waits for provider acceptance and uses privacy-safe operational logging.
-- A custom domain, business mailbox, and verified sender domain remain Phase 4B work.
-
----
-
-## 8. External Resources & Documentation
-
-The following official resources are relevant to the technologies used in this project:
-
-- Node.js documentation: https://nodejs.org/docs/
-  - useful for understanding runtime behavior and package execution.
-
-- npm documentation: https://docs.npmjs.com/
-  - useful for package installation and script management.
-
-- Express documentation: https://expressjs.com/
-  - useful for understanding routing, middleware, and request handling.
-
-- HTML, CSS, and JavaScript documentation: https://developer.mozilla.org/
-  - useful for understanding the frontend code in the project.
-
-- Git documentation: https://git-scm.com/doc
-  - useful for repository management and troubleshooting.
-
-- GitHub documentation: https://docs.github.com/
-  - useful for repository setup, remote configuration, and push/pull workflows.
-
----
-
-## 9. Configuration
-
-### [package.json](package.json)
-
-Controls:
-
-- package name and version,
-- startup script,
-- dependency definitions.
-
-Why it is configured this way:
-
-- the project needed a simple Node entry point and an npm-based workflow.
-
-### [.gitignore](.gitignore)
-
-Controls:
-
-- which files should not be committed,
-- mainly generated files and local runtime data.
-
-Why it is configured this way:
-
-- node_modules and log files should not be committed to the repository.
-
-### [server.js](server.js)
-
-Controls:
-
-- server startup behavior,
-- static file serving,
-- contact form request handling,
-- port selection fallback.
-
-Why it is configured this way:
-
-- the server needs to serve content and accept data from the contact form.
-
-### Website content configuration
-
-The site content is currently embedded in [index.html](index.html). This includes:
-
-- business copy,
-- placeholder legal/contact details,
-- CTA text,
-- the form action target.
-
-If the business details change, the markup should be updated directly here.
-
----
-
-## 10. Deployment Process
-
-### Current deployment status
-
-The project has been deployed to Render and the live service is VERIFIED as reachable (Phase 2 complete).
-
-What was actually verified
-
-- Hosting provider: Render (Web Service)
-- GitHub repository: `Khul4ni/click-for-parts` (deployment configured through the Render dashboard connected to this GitHub repo)
-- Branch deployed: `master`
-- Runtime: Node
-- Build command: `npm install`
-- Start command: `npm start`
-- Live URL (owner-provided / VERIFIED): https://click-for-parts.onrender.com
-- Verification date: 2026-08-10
-
-Notes about `render.yaml`
-
-- A local file named `render.yaml` exists in this working directory but is currently untracked by Git in this environment (see git status). This local file was NOT verified as part of the deployment and should NOT be assumed to have been used for the verified Render deployment. Treat `render.yaml` as an untracked local deployment configuration pending review before deciding whether to commit it.
-
-What is still pending
-
-- Real email delivery for the contact form (Phase 4) is not yet configured.
-- DNS, custom domain mapping, and any business email setup are pending owner actions and not configured as part of this verification.
-
-Recommended next steps (Phase 3)
-
-1. Proceed to Phase 3: update the website content and UI/UX to reflect the real Click For Parts business positioning.
-2. After Phase 3 content/UI changes are approved, schedule Phase 4 to wire email delivery using verified domain/email credentials.
-3. Run the production hardening checklist once email and domain are configured.
-
-### Production deployment notes
-
-Because the site uses Express, the host must provide a Node.js runtime. Render provides this runtime and was used for this verification. If the host only supports static files, the contact backend will not function without a Node runtime or a separate form backend service.
-
----
-
-## 11. Testing & Debugging
-
-### What was tested
-
-- local dependency installation,
-- local startup of the Express server,
-- route handling of the contact form logic,
-- basic server startup behavior.
-
-### How it was tested
-
-The project was tested by running the server locally and checking the startup log output.
-
-### Errors encountered
-
-The main issue encountered during startup was:
-
-```text
-Error: listen EADDRINUSE: address already in use :::3000
-```
-
-### Diagnosis
-
-This error indicated that port 3000 was already being used by another process. The server code was updated so that it would try alternative ports if the preferred port was occupied.
-
-### Fix applied
-
-The server logic was modified to:
-
-- read the preferred port from the PORT environment variable,
-- try a list of fallback ports if the first one is taken,
-- log which port is being used.
-
-### Current testing status
-
-The server now starts locally and prints a successful startup message when it can bind to a port.
-
-### What is not currently covered by tests
-
-No automated test suite exists in this project. The verification approach depended on manual execution and direct inspection.
-
----
-
-## 12. Decisions & Reasoning
-
-### Decision 1: use a simple static site with a small Express backend
-
-Problem: the project needed a quick online presence with a functional contact form.
-
-Options:
-
-- pure static site with no backend,
-- PHP backend,
-- Node/Express backend.
-
-Decision: use a simple static frontend plus Node/Express.
-
-Reason: the setup is lightweight, low-cost, and easy to understand.
-
-Trade-offs: this is not as feature-rich as a full CMS or large web application, but it is much simpler to maintain.
-
-### Decision 2: use vanilla HTML/CSS/JavaScript
-
-Problem: a lightweight website did not need a large framework.
-
-Options:
-
-- React/Vue,
-- plain HTML/CSS/JS.
-
-Decision: use plain HTML/CSS/JS.
-
-Reason: less setup, fewer dependencies, easier handoff, and perfect for a simple promotional site.
-
-Trade-offs: the site is less dynamic than a framework-driven single-page app.
-
-### Decision 3: keep the contact form backend minimal
-
-Problem: a real contact form backend was needed, but a full system was out of scope.
-
-Options:
-
-- no backend,
-- real email integration immediately,
-- minimal validation and logging backend.
-
-Decision: implement a minimal backend for validation and logging.
-
-Reason: this keeps the project functional and easy to extend later.
-
-Trade-offs: it is not production-ready for real business email delivery yet.
-
-### Decision 4: add port-fallback logic
-
-Problem: local development would fail if port 3000 was already in use.
-
-Options:
-
-- fail immediately,
-- require the user to manually change the port,
-- automatically try other ports.
-
-Decision: automatically try alternative ports.
-
-Reason: it reduces friction during local development.
-
-Trade-offs: the port used may vary depending on availability, but this is usually acceptable for local development.
-
----
-
-## 13. Security
-
-### Current security posture
-
-The project is very lightweight and has not yet been hardened for production.
-
-### Current strengths
-
-- basic required-field validation exists,
-- the project does not include obvious hard-coded secrets in the tracked source,
-- ignore rules were configured for generated files.
-
-### Known limitations
-
-- no authentication is implemented,
-- no rate limiting is implemented,
-- no SSL enforcement in code,
-- no real email provider integration,
-- input handling is minimal,
-- submitted form data is logged to the console.
-
-### Recommended security improvements
-
-- add a real email provider with secure outbound delivery,
-- add rate limiting,
-- add server-side validation and content sanitization,
-- move configuration into environment variables where appropriate,
-- use HTTPS in production,
-- review dependencies regularly.
-
----
-
-## 14. Maintenance Guide
-
-### Local development
-
-1. Open a terminal in the project directory.
-2. Run `npm install` if dependencies are not already installed.
-3. Run `npm start` or `node server.js`.
-4. Open `http://localhost:3000` or the fallback port reported by the server.
-
-### Making changes
-
-- edit the HTML in [index.html](index.html) for content changes,
-- edit [css/style.css](css/style.css) and [css/responsive.css](css/responsive.css) for appearance,
-- edit [js/main.js](js/main.js) for interactive behavior,
-- edit [server.js](server.js) for backend behavior.
-
-### Testing changes
-
-- verify the site loads locally,
-- submit the contact form to check the backend route,
-- watch the console output for validation errors and other issues.
-
-### Updating dependencies
-
-Use `npm install <package>` or `npm update` as needed, then verify the server still starts.
-
-### Git maintenance
-
-Use:
-
-```bash
-git status
-git add .
-git commit -m "message"
-git push
-```
-
----
-
-## 15. Reproduction Guide
-
-This section explains how a new developer could recreate the project from scratch.
-
-### Prerequisites
-
-- Node.js installed
-- npm available
-- Git installed
-- a terminal (PowerShell, Git Bash, or similar)
-
-### Steps
-
-1. Clone or copy the repository to a new machine.
-2. Open a terminal in the project folder.
-3. Run:
-
-```bash
-npm install
-```
-
-4. Start the app:
-
-```bash
-npm start
-```
-
-5. Open the local URL shown by the terminal.
-
-### Optional: use a different port
-
-```bash
-PORT=3001 npm start
-```
-
-### If the repository is not present yet
-
-A developer could recreate the files manually by creating:
-
-- the HTML page,
-- CSS files,
-- JS file,
-- server file,
-- package manifest,
-- git ignore file.
-
-But the current project already contains these files and is ready to run once dependencies are installed.
-
----
-
-## 16. Lessons Learned
-
-### What worked well
-
-- the project stayed simple and easy to explain,
-- the site was fast to build,
-- Express was sufficient for the intended backend needs,
-- local startup could be verified quickly.
-
-### What did not work as smoothly
-
-- local port conflicts caused startup issues,
-- the temporary Resend sender still needs replacement during Phase 4B,
-- the business content and placeholders still need final real-world details.
-
-### Improvements that should be made later
-
-- configure a verified sender domain and business mailbox,
-- publish SPF, DKIM, and DMARC records,
-- replace the temporary Resend test sender,
-- add deployment automation.
-
----
-
-## 17. Future Improvements
-
-### Phase 4A email delivery status
+## 6. Phase 4A email delivery
 
 **TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
 
-The current `/contact` route uses Resend with the test sender
-`Click For Parts <onboarding@resend.dev>`. It reads `RESEND_API_KEY` and
-`CONTACT_TO_EMAIL` from the runtime environment, waits for provider acceptance, and
-returns accessible success or failure feedback through the frontend. The route includes
-a 16 KB request limit, per-IP in-memory rate limiting, a honeypot, field-length limits,
-and privacy-safe operational logs. Until a custom domain is verified, delivery may be
-limited to the email associated with the Resend account.
+- Provider: Resend API
+- Sender: `Click For Parts <onboarding@resend.dev>`
+- Runtime configuration: `RESEND_API_KEY` and `CONTACT_TO_EMAIL`
+- Public business mailbox: `info@clickforparts.co.za`
 
-The verified production flow is:
+Environment-variable values are secrets and must never appear in source, documentation,
+logs, screenshots, or chat.
 
-```text
-Visitor
-  → async contact form
-  → Express validation
-  → honeypot, per-IP rate limiting, and body/field limits
-  → Resend API
-  → CONTACT_TO_EMAIL
-  → accessible success or error feedback
-```
+Production verification includes valid request acceptance, `Sending...`, success and
+failure UI states, duplicate-submit prevention, invalid request rejection, honeypot,
+body-size and rate-limit behavior, privacy-safe logging, and owner-observed inbox delivery.
 
-Production checks confirmed valid submission acceptance, the frontend success state,
-invalid-submission rejection, active abuse protection, no sensitive contact data in
-logs, the corrected header/navigation styling, and successful desktop/mobile checks.
-The owner previously observed delivery in the configured inbox.
+The automated sender is not the public mailbox. The form still sends from
+`onboarding@resend.dev`; a custom sender such as `website@clickforparts.co.za` is only a
+future option pending Resend domain verification.
 
-Current limitations:
+## 7. Domain, Google Workspace, and DNS
 
-- No custom domain or business mailbox is configured.
-- The `resend.dev` sender is temporary.
-- The in-memory rate limiter resets on service restart and is not shared across instances.
-- Provider acceptance does not guarantee inbox delivery.
+### Domain
 
-### Phase 4B future work
+- Domain: `clickforparts.co.za`
+- Registrar / DNS provider: HostAfrica
+- Registration state: **OWNED / ACTIVE**
+- Render mapping: **NOT YET CONNECTED**
+- Current public site: https://click-for-parts.onrender.com
 
-1. Configure a custom domain and business mailbox.
-2. Verify a Resend sender domain and publish SPF, DKIM, and DMARC records.
-3. Replace `onboarding@resend.dev` with the approved production sender.
-4. Complete final production hardening and reassess distributed abuse protection.
+The apex and `www` hostnames remain Phase 4B work. Do not claim that the custom domain
+currently serves the website.
 
-### Nice-to-have improvements
+### Google Workspace
 
-- CMS integration,
-- form success/error messages,
-- analytics,
-- contact form spam protection,
-- richer portfolio content,
-- image optimization.
+- Domain ownership: **VERIFIED**
+- Gmail: **ACTIVATED / VERIFIED**
+- Incoming test: **VERIFIED**
+- Outgoing test: **VERIFIED**
+- Primary mailbox: `info@clickforparts.co.za`
+- MX host: `@`
+- MX priority: `1`
+- MX destination: `smtp.google.com`
 
----
+### SPF
 
-## 18. Final Architecture Overview
-
-The full system can be understood as follows:
+Status: **CONFIGURED**
 
 ```text
-User
-  ↓
-Browser
-  ↓
-index.html + CSS + JS
-  ↓
-Express server (server.js)
-  ↓
-/contact route
-  ↓
-Validation + honeypot + rate/body limits
-  ↓
-Resend API
-  ↓
-CONTACT_TO_EMAIL
-  ↓
-Accessible success/error feedback
+v=spf1 include:_spf.google.com ~all
 ```
 
-### Typical user interaction
+This is the current Google-only SPF configuration and replaced the legacy HostAfrica mail
+configuration.
 
-1. A user visits the website.
-2. The browser loads the landing page content and styles.
-3. The visitor reads the marketing sections and decides to contact the business.
-4. The visitor fills out the contact form.
-5. The browser sends the form to the Express server.
-6. The backend validates the input.
-7. The server applies abuse controls and requests delivery through Resend.
-8. The frontend displays accessible success or error feedback.
+### DKIM
 
-### In short
+Status: **CONFIGURED / PROPAGATION PENDING**
 
-The project is a lightweight marketing website with a simple backend-contact workflow. It is intentionally straightforward so it can be run locally, shown to stakeholders, and extended later without a heavy setup.
+- Record type: `TXT`
+- Selector / host: `google._domainkey`
+- Value prefix: `v=DKIM1; k=rsa; p=...`
+
+The full public key is intentionally omitted. Google Workspace authentication has not yet
+verified the record and advised allowing up to 48 hours for DNS propagation.
+
+### DMARC
+
+Status: **NOT YET CONFIGURED**
+
+Planned order:
+
+1. Keep SPF configured.
+2. Verify DKIM.
+3. Allow authentication to stabilise.
+4. Publish DMARC.
+5. Begin with monitoring such as `p=none`.
+
+An outgoing Gmail test initially landed in spam. SPF, DKIM, and DMARC improve sender
+authentication and deliverability, but receiving providers make independent spam and
+inbox-placement decisions.
+
+## 8. Deployment and operations
+
+- Production: **VERIFIED**
+- Hosting: Render Web Service
+- Repository: `Khul4ni/click-for-parts`
+- Branch: `master`
+- Auto-deploy: enabled from `master`
+- Build: `npm install`
+- Start: `npm start`
+- Live URL: https://click-for-parts.onrender.com
+
+Render environment values must be managed in Render, never in Git. No custom-domain,
+Google Workspace, DNS, or Resend-provider configuration is controlled by application code.
+
+`render.yaml` is **UNTRACKED / UNUSED / UNREVIEWED**. It is not part of the verified live
+deployment and must not be modified or described as active configuration.
+
+## 9. Testing
+
+Run locally:
+
+```bash
+npm test
+```
+
+The built-in test suite uses a mocked email sender and does not call the real Resend API.
+Coverage includes valid submissions, optional company, required fields, interest and
+email validation, safe HTML, honeypot, request size, rate limiting, provider failure,
+missing configuration, privacy-safe logs, sending/success/failure UI states, request
+encoding, and duplicate-submit prevention.
+
+Production verification has additionally covered Render deployment, exact deployed-file
+matching, desktop/mobile rendering, navigation, focus behavior, footer wrapping, direct
+business contact links, form UI, Resend acceptance, and owner-observed inbox delivery.
+
+## 10. Git milestones
+
+| Commit | Milestone |
+|---|---|
+| `d7ba8a883bd848fb85438793ce3f308f6ccfb408` | Phase 3 website implementation |
+| `c46967e3afdd79eb595fc43b430a677a519041ee` | Privacy-safe contact logging |
+| `cff3381bfc4c74640a3411c540a31b38a35fa46f` | Phase 3 merge |
+| `679fca53d2b2f1b9d6dc1ebd120db736ba054b6f` | Phase 4A Resend implementation |
+| `3e7ff76cc6b21514e4ffa2c9a5836e41b237a309` | Phase 4A merge |
+| `91d35fb903504090dc3b84a7550262226e0e9f68` | Dark navigation regression fix |
+| `b33767eceb67cf8b7a253e781a68c38688b2cb50` | Phase 4A documentation closeout |
+| `8c15eae78c109f5ae878b1fadbeb25ae8be8edab` | Public business email link |
+| `f23a79fd274945cc063c20be25ad4e279f8ded60` | Verified business contact details |
+
+These hashes and messages were verified from repository history during reconciliation.
+
+## 11. Procurement and supplier documentation
+
+The business has supporting CIPC registration, SARS registration, business-banking
+confirmation, supplier-verification paperwork, an active domain, and a working Google
+Workspace mailbox. This supports procurement and business-verification readiness.
+
+Do not reproduce personal ID numbers, bank details, tax references, passwords, API keys,
+personal residential addresses, or other sensitive supporting-document data.
+
+Supplier-verification/onboarding paperwork involving Netstar / Altron exists. It does not
+by itself prove final appointment. Do not describe Click For Parts as an official Netstar
+partner, authorised dealer, or approved supplier without separate explicit evidence.
+
+## 12. Phase 4B remaining work
+
+Phase 4B is **PARTIALLY STARTED AT INFRASTRUCTURE LEVEL / NOT COMPLETE**.
+
+Remaining work:
+
+1. Verify Google Workspace DKIM after propagation.
+2. Configure DMARC after DKIM and authentication stabilise.
+3. Verify `clickforparts.co.za` in Resend.
+4. Replace the temporary automated sender and confirm routing to the business mailbox.
+5. Connect `clickforparts.co.za` and `www.clickforparts.co.za` to Render.
+6. Verify HTTPS, canonical redirects, DNS, and production behavior.
+7. Complete final DNS and production hardening.

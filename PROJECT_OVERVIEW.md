@@ -1,154 +1,158 @@
 # Click For Parts System Overview
 
-## Project Purpose
+## Purpose and positioning
 
-This project is a marketing-focused website for Click For Parts. It is designed as a small business landing site with an informational homepage, service descriptions, a portfolio placeholder, and a contact form.
+Click For Parts is the production website for Click For Parts (Pty) Ltd, a registered
+South African private company and integrated automotive partner.
 
-## Technology Stack
+The site positions three core services:
 
-- Frontend:
-  - HTML5 for page structure and content
-  - CSS3 for layout, typography, colors, and responsive styling
-  - Vanilla JavaScript for navigation toggling, smooth section behavior, and year auto-update
-- Backend:
-  - Node.js with Express as the contact form backend
-  - No database or email service is configured yet
-- Hosting model:
-  - Static site assets served from the project root
-  - A single Express route to process contact form submissions
+- Motor Vehicle Spares
+- Vehicle Tracking
+- Motor Insurance
 
-## Files and Structure
+It serves individual motorists and fleet operators. Fleet is a customer segment/use
+case, not a separate fourth service. The primary message is: **We keep you covered on
+every journey.**
 
-Root files:
-- `index.html`
-  - Main website page with hero, about, services, portfolio, clients, and contact sections.
-  - Uses a contact form that posts to `/contact`.
-- `contact.php`
-  - Original PHP contact handler.
-  - No longer used by the new JavaScript backend and can be removed once server deployment is confirmed.
-- `server.js`
-  - Express server entry point.
-  - Serves static site content and handles POST requests at `/contact`.
-- `README.md`
-  - Project summary, stack guidance, and deployment notes.
-- `PROJECT_OVERVIEW.md`
-  - Comprehensive system explanation including features, functions, and project structure.
-- `BUILD_PLAN.md`
-  - Original development and handoff checklist.
+No unverified partner, client, certification, testimonial, insurer, tracking-provider,
+performance-statistic, or delivery-guarantee claim should be added.
 
-Asset folders:
-- `css/`
-  - `style.css` — primary site styling, layout, typography, buttons, cards, and form styles.
-  - `responsive.css` — responsive layout rules for smaller screens.
-- `js/`
-  - `main.js` — frontend behavior for navigation toggle, anchor link handling, and dynamic year update.
+## Verified company information
 
-## Frontend Features
+- Legal name: Click For Parts (Pty) Ltd
+- Registration number: `2026/594687/07`
+- Registration date: 29 July 2026
+- Registered office: 62 6th Street, Springs, Gauteng, 1575, South Africa
+- Phone: `066 560 8782` (`tel:+27665608782`)
+- Public mailbox: `info@clickforparts.co.za`
 
-### Navigation
-- Responsive mobile navigation menu.
-- Toggle button opens and closes the menu.
-- Anchor links collapse the menu when a section is selected.
+The website displays the legal name, phone, email, and registered-office address. It does
+not contain personal ID numbers, bank details, tax references, passwords, API keys, or
+private supporting-document information.
 
-### Hero and marketing content
-- Hero section with messaging, call-to-action buttons, and brand positioning.
-- About and services sections describing the business offer.
-- Portfolio placeholder for embedded video content.
-- Clients and partners section for logos/names.
+## Technology and repository
 
-### Contact section
-- Contact form fields: name, email, phone, and message.
-- Required validation on name, email, and message.
-- Uses `novalidate` meaning browser validation is not forced; custom backend validation is used instead.
-- Contact details block with phone, WhatsApp, email, and address placeholders.
+- Frontend: semantic HTML, CSS, and vanilla JavaScript
+- Backend: Node.js and Express
+- Contact delivery: Resend Node.js SDK
+- Tests: Node.js built-in test runner
+- Hosting: Render Web Service
+- Repository: `Khul4ni/click-for-parts`
+- Deployment branch: `master`
+- Live URL: https://click-for-parts.onrender.com
 
-### Footer
-- Copyright and current year text updated automatically.
+Render deployment and the production website are **VERIFIED**. Render auto-deploys from
+`master`. The repository does not pin Node; Resend requires Node.js 20 or newer.
 
-## Backend Features
+## Production website
 
-### Express backend
-- Single endpoint: `POST /contact`
-- Receives form data from the frontend contact form
-- Validates required fields: `name`, `email`, `phone`, `interest`, and `message`
-- Applies body/field limits, a honeypot, and per-IP rate limiting
-- Sends accepted enquiries through Resend and returns a JSON success or error response
+The current single-page site includes accessible sticky desktop/mobile navigation, a
+dark navy responsive visual system, Home, the three service pillars, Integrated Value,
+How It Works, Who We Serve, About, Contact, and a responsive legal/contact footer.
 
-### Data handling
-- Uses `express.urlencoded()` middleware to parse form submissions
-- Uses `express.json()` middleware for consistency with JSON request handling
-- Uses privacy-safe operational logs without customer contact details or message content
+The Contact section and footer show the verified phone, mailbox, and registered-office
+address. Phone and email use accessible `tel:` and `mailto:` links.
 
-### Deployment notes
-- The backend is intended to run on Node.js with Express.
-- To start the server:
-  1. Install Node.js dependencies:
-     ```bash
-     npm init -y
-     npm install express
-     ```
-  2. Run the server:
-     ```bash
-     node server.js
-     ```
-  3. Open `http://localhost:3000` in a browser.
+Production checks at desktop and approximately 390px mobile confirmed no horizontal
+overflow, no console errors, working mobile navigation and `aria-expanded` behavior,
+keyboard focus visibility, cyan focus treatment, a dark navy sticky header, and a
+responsive footer.
 
-Render is the recommended deployment target for this Node.js-backed site.
-Deployment status: Deployed to Render (Phase 2 VERIFIED). Live URL: https://click-for-parts.onrender.com
+## Contact form architecture
 
-Deployment facts (verified)
+```text
+Visitor
+  → asynchronous form submission
+  → POST /contact
+  → Express validation
+  → 16 KB body limit and field-length limits
+  → honeypot
+  → per-IP in-memory rate limiting
+  → Resend API
+  → CONTACT_TO_EMAIL
+  → accessible frontend success/failure feedback
+```
 
-- Hosting provider: Render Web Service
-- GitHub repository: `Khul4ni/click-for-parts`
-- Branch: `master`
-- Runtime: Node
-- Build command: `npm install`
-- Start command: `npm start`
+Required fields are `name`, `email`, `phone`, `interest`, and `message`; `company` is
+optional. Allowed interests are `spares`, `tracking`, `insurance`, `fleet`, and `other`.
 
-Note: a local file named `render.yaml` exists in the working directory but is UNTRACKED by Git in this environment and was NOT part of the verified deployment. Review before committing.
-- If the site remains fully static, the `server.js` backend can still be used for contact form handling behind a Node host.
+Expected responses are `200` for provider acceptance, `400` for invalid input, `413` for
+an oversized body, `429` for rate limiting, `502` for provider failure, and `503` for
+missing server configuration.
 
-## Recommended Improvements
+## Email systems: important distinction
 
-- Remove `contact.php` and update documentation once the backend is confirmed to use Node/Express.
-- Complete Phase 4B custom-domain, business-mailbox, authenticated sender-domain, and
-  production-hardening work.
+### Public business mailbox
 
-## Summary of current behavior
+- Mailbox: `info@clickforparts.co.za`
+- Provider: Google Workspace
+- Domain ownership: **VERIFIED**
+- Gmail activation: **VERIFIED**
+- Incoming/outgoing tests: **VERIFIED**
 
-- Users load `index.html`.
-- They can navigate sections through the site header links.
-- They can submit the contact form.
-- JavaScript submits the form asynchronously to `POST /contact`.
-- Express validates required fields and the allowed interest value.
-- A honeypot, per-IP in-memory rate limiter, field limits, and 16 KB body limit protect
-  the endpoint from basic abuse.
-- Resend sends an enquiry notification to `CONTACT_TO_EMAIL`.
-- The accessible status region reports sending, success, or failure without reloading.
+### Automated website delivery
 
-## Phase 4A temporary email delivery
+- Phase: **TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
+- Provider: Resend
+- Sender: `Click For Parts <onboarding@resend.dev>`
+- Configuration names: `RESEND_API_KEY`, `CONTACT_TO_EMAIL`
 
-**TEMPORARY / TEST-MODE EMAIL DELIVERY — VERIFIED**
+The public mailbox and automated sender are separate. The form does not send from the
+public mailbox or custom domain yet. A later approved sender may be
+`website@clickforparts.co.za`, but that is only a plan and is not implemented.
 
-The live Express route sends through Resend using
-`Click For Parts <onboarding@resend.dev>`. Runtime configuration is supplied through
-`RESEND_API_KEY` and `CONTACT_TO_EMAIL`; their values are never stored in Git or logged.
+## Security and privacy
 
-Production verification confirmed valid submission acceptance, frontend success/error
-behavior, invalid-submission rejection, active abuse controls, privacy-safe logs, the
-corrected dark navigation, and desktop/mobile behavior without console errors or
-horizontal overflow. The owner also observed real inbox delivery.
+The server logs only privacy-safe operational events. It does not log customer names,
+email addresses, phone numbers, company names, enquiry messages, API keys, recipient
+addresses, or raw provider errors.
 
-Limitations remain: there is no custom domain or business mailbox, the `resend.dev`
-sender is temporary, the in-memory limiter resets on restart, and provider acceptance
-does not itself guarantee inbox delivery.
+Current basic abuse controls are a honeypot, request/field limits, duplicate-submit
+prevention, and per-IP in-memory rate limiting. The limiter resets on restart and is not
+distributed. Provider API acceptance does not guarantee inbox delivery.
 
-Phase 4B remains future work and includes the custom domain, business mailbox, verified
-Resend sender domain, SPF/DKIM/DMARC records, replacement of the test sender, and final
-production hardening.
+## Domain and authentication state
 
-## Important notes
+- Domain `clickforparts.co.za`: **OWNED / ACTIVE**
+- Website domain mapping: **NOT YET CONNECTED TO RENDER**
+- DNS provider: HostAfrica
+- Google-only SPF: **CONFIGURED**
+- DKIM: **CONFIGURED / PROPAGATION PENDING**
+- DMARC: **NOT YET CONFIGURED**
+- Resend sender-domain verification: **NOT YET CONFIGURED**
 
-- `contact.php` remains in the repository for reference but is not part of the current JavaScript backend flow.
-- The new backend expects the form action to target the Node server root path.
-- This setup is suitable for local development and can be extended for deployment on any Node-capable host.
+Current DNS facts:
+
+- Google Workspace MX: host `@`, priority `1`, destination `smtp.google.com`
+- SPF: `v=spf1 include:_spf.google.com ~all`
+- DKIM selector: `google._domainkey`; the TXT value begins `v=DKIM1; k=rsa; p=...`
+
+The full DKIM key is intentionally omitted. DMARC should be added only after DKIM is
+verified and authentication has stabilised, beginning with monitoring such as `p=none`.
+Email authentication supports deliverability but does not guarantee inbox placement.
+
+## Procurement readiness
+
+The business has CIPC registration, SARS registration, business-banking confirmation,
+supplier-verification paperwork, an active domain, and a working Google Workspace
+mailbox. Sensitive values in these documents remain private.
+
+Supplier-verification/onboarding paperwork involving Netstar / Altron exists. It is not
+evidence of final appointment, so the business must not be described as an official
+Netstar partner, authorised dealer, or approved supplier without separate proof.
+
+## Phase status
+
+- Phase 3 website redesign: **COMPLETE / VERIFIED**
+- Phase 4A Resend delivery: **COMPLETE / VERIFIED**
+- Phase 4B: **PARTIALLY STARTED AT INFRASTRUCTURE LEVEL / NOT COMPLETE**
+
+Phase 4B remaining work includes DKIM verification, DMARC, Resend domain verification,
+replacement of the temporary sender, Render custom-domain mapping for apex and `www`,
+HTTPS/redirect verification, and final DNS/production hardening.
+
+## Repository note
+
+`render.yaml` remains **UNTRACKED / UNUSED / UNREVIEWED** and is not part of the live
+Render deployment.

@@ -4,6 +4,14 @@ const assert = require('node:assert/strict');
 class FakeClassList {
   constructor() { this.values = new Set(['visually-hidden']); }
   remove(value) { this.values.delete(value); }
+  toggle(value) {
+    if (this.values.has(value)) {
+      this.values.delete(value);
+      return false;
+    }
+    this.values.add(value);
+    return true;
+  }
 }
 
 function createFrontend({ responseOk = true, deferred = false } = {}) {
@@ -47,6 +55,36 @@ global.FormData = class FormDataMock { constructor(form) { this.form = form; } }
 const { initializePage } = require('../js/main');
 
 test.after(() => { global.FormData = originalFormData; });
+
+test('mobile navigation resets aria-expanded after a navigation link is selected', () => {
+  const listeners = {};
+  const attributes = { 'aria-expanded': 'false' };
+  const toggle = {
+    addEventListener(type, handler) { listeners[`toggle-${type}`] = handler; },
+    setAttribute(name, value) { attributes[name] = value; },
+  };
+  const nav = {
+    classList: new FakeClassList(),
+    querySelector() { return { focus() {} }; },
+  };
+  const link = {
+    addEventListener(type, handler) { listeners[`link-${type}`] = handler; },
+  };
+  const documentRef = {
+    querySelector(selector) { return selector === '.nav-toggle' ? toggle : nav; },
+    querySelectorAll() { return [link]; },
+    getElementById() { return null; },
+  };
+
+  initializePage(documentRef, async () => ({ ok: true }));
+  listeners['toggle-click']();
+  assert.equal(attributes['aria-expanded'], 'true');
+  assert.equal(nav.classList.values.has('is-open'), true);
+
+  listeners['link-click']();
+  assert.equal(attributes['aria-expanded'], 'false');
+  assert.equal(nav.classList.values.has('is-open'), false);
+});
 
 test('frontend shows sending then success and resets form', async () => {
   const fixture = createFrontend({ deferred: true });

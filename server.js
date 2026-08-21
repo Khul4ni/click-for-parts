@@ -92,10 +92,21 @@ function createApp({
   const app = express();
   const sender = emailSender || (apiKey ? new Resend(apiKey).emails : null);
 
+  app.disable('x-powered-by');
   app.set('trust proxy', 1);
+  app.use((req, res, next) => {
+    res.set({
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'X-Frame-Options': 'SAMEORIGIN',
+    });
+    next();
+  });
   app.use(express.urlencoded({ extended: false, limit: '16kb' }));
   app.use(express.json({ limit: '16kb' }));
-  app.use(express.static(path.join(__dirname)));
+  app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+  app.use('/css', express.static(path.join(__dirname, 'css')));
+  app.use('/js', express.static(path.join(__dirname, 'js')));
 
   app.post('/contact', createRateLimiter(rateLimitOptions), async (req, res) => {
     const website = String(req.body.website || '').trim();
@@ -156,6 +167,10 @@ function createApp({
   app.use((error, req, res, next) => {
     if (error?.type === 'entity.too.large') {
       return res.status(413).json({ message: 'Request is too large.' });
+    }
+
+    if (error?.type === 'entity.parse.failed') {
+      return res.status(400).json({ message: 'Invalid request.' });
     }
 
     console.error('Unexpected server error.');

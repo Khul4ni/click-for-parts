@@ -32,6 +32,38 @@ function post(url, body, headers = {}) {
   });
 }
 
+test('only approved frontend resources are publicly served', async () => {
+  await withServer({}, async (url) => {
+    for (const resource of ['/', '/css/style.css', '/css/responsive.css', '/js/main.js']) {
+      const response = await fetch(`${url}${resource}`);
+      assert.equal(response.status, 200, `${resource} should be public`);
+    }
+
+    for (const resource of [
+      '/server.js',
+      '/package.json',
+      '/package-lock.json',
+      '/test/server.test.js',
+      '/README.md',
+      '/TECHNICAL_DOCUMENTATION.md',
+      '/contact.php',
+    ]) {
+      const response = await fetch(`${url}${resource}`);
+      assert.equal(response.status, 404, `${resource} should not be public`);
+    }
+  });
+});
+
+test('responses use focused security headers without identifying Express', async () => {
+  await withServer({}, async (url) => {
+    const response = await fetch(url);
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+    assert.equal(response.headers.get('x-frame-options'), 'SAMEORIGIN');
+    assert.equal(response.headers.get('x-powered-by'), null);
+  });
+});
+
 test('valid submission sends safe text and HTML email', async () => {
   let sent;
   const emailSender = { send: async (payload) => { sent = payload; return { data: { id: 'test-id' }, error: null }; } };
@@ -104,6 +136,14 @@ test('oversized request returns 413', async () => {
   await withServer({ emailSender, contactToEmail: 'recipient@example.com' }, async (url) => {
     const response = await post(url, 'x'.repeat(17 * 1024), { 'Content-Type': 'application/json' });
     assert.equal(response.status, 413);
+  });
+});
+
+test('malformed JSON returns a safe 400 response', async () => {
+  await withServer({}, async (url) => {
+    const response = await post(url, '{');
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { message: 'Invalid request.' });
   });
 });
 

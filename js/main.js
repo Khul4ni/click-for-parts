@@ -20,6 +20,7 @@ function initializePage(documentRef = document, fetchImpl = fetch) {
   documentRef.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener('click', () => {
       nav?.classList.remove('is-open');
+      toggle?.setAttribute('aria-expanded', 'false');
     });
   });
 
